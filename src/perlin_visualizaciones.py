@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation 
+from matplotlib.animation import FuncAnimation, FFMpegWriter
 
 # ----------------------------------------------------------------------
 #  VISUALIZACIONES
@@ -10,7 +10,11 @@ from matplotlib.animation import FuncAnimation
 #   
 # -----------------------------------------------------------------------------
 
+from matplotlib.animation import PillowWriter # Importa PillowWriter
+# ... (Tu código de animación) ...
 
+writer = PillowWriter(fps=20) 
+ruta = 'graficos/'
 def dibujar_gradientes_grid(ax, generator, alpha, arrow_scale=0.15):
     """Dibuja todos los vectores de la cuadricula de un generator."""
     tam_grid_x = generator.TAM_GRID_X
@@ -67,14 +71,14 @@ def generar_y_graficar_estatico(x_range, y_range, alpha, generator, calculation_
     ax.set_title(title); ax.set_xlabel("coordenada x"); ax.set_ylabel("coordenada y")
     plt.colorbar(im, ax=ax, label="valor de salida")
     
-    plt.show()
-
+    # plt.show()
+    plt.savefig(ruta + 'img_'+calculation_method_name+ '.png')
 
 def animar_barrido_perlin(x_range, y_range, alpha, generator, calculation_method_name, detail=100, interval_ms=50):
     """
     Muestra la animación por celda.
-    En el rango dado: x_range y_range
     recive tambien el generador: generator
+    En el rango dado: x_range y_range
     y lo puede hacer para cualquier funcion: calculation_method_name
     """
     x_min, x_max = x_range; y_min, y_max = y_range
@@ -161,4 +165,18 @@ def animar_barrido_perlin(x_range, y_range, alpha, generator, calculation_method
     # hacer la animacion
     ani = FuncAnimation(fig, update, frames=len(frames), blit=True, interval=interval_ms)
     
-    plt.show()
+    #plt.show()
+    
+    # para Guardar como gif
+    nombre_archivo = f"animacion_ruido_perlin_{calculation_method_name}_alpha{alpha}.mp4"
+    
+    # 2. Crea el escritor de video (requiere FFmpeg)
+    writer = FFMpegWriter(fps=30)  # Puedes ajustar el fps si necesitas que vaya más rápido/lento
+    
+    # 3. Guarda la animación en el archivo
+    print(f"en proceso de guardar la animacion en: {nombre_archivo}... esto puede tomar unos segundos...")
+    ani.save(ruta + nombre_archivo, writer=writer)
+    print(f" guardada con exitooooo  {nombre_archivo}!")
+    
+    # Opcional: Cerrar la figura para liberar recursos
+    plt.close(fig) 
